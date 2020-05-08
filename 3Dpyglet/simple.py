@@ -6,6 +6,7 @@ import pyglet
 from pyglet.gl import *
 from pyglet.window import key
 import math
+import random
 
 class Building:
 
@@ -13,7 +14,7 @@ class Building:
         """
         given a png file, create a pyglet texture
         """
-        tex = pyglet.image.load(file).texture
+        tex = pyglet.image.load(file).get_texture()
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         return pyglet.graphics.TextureGroup(tex)
@@ -33,6 +34,44 @@ class Building:
         self.batch.add(4, GL_QUADS, texture[1],   ('v3f', (x, y, z,  X, y, z,  X, y, Z,  x, y, Z)), tex_coords)  # bottom
         self.batch.add(4, GL_QUADS, texture[2],   ('v3f', (x, Y, Z,  X, Y, Z,  X, Y, z,  x, Y, z)), tex_coords)  # top
 
+    def genleaves(self,X,Y,Z,H,R):
+        """
+        X Y Z : position de l'extrémité inférieure du tron de l'arbre
+        H : offset vertical de la couche de feuille par rapport à Z
+        R : "rayon" de la couche de feuille
+        """
+        spruce_leave=self.spruce_leave
+        for y in range(1,R+1):
+            self.add_block(Y+y,Z+H,X,spruce_leave)
+            self.add_block(Y-y,Z+H,X,spruce_leave)
+        for x in range(1,R+1):
+            for y in range(1,R-x+1):
+                self.add_block(Y+y,Z+H,X+x,spruce_leave)
+                self.add_block(Y+y,Z+H,X-x,spruce_leave)
+                self.add_block(Y-y,Z+H,X+x,spruce_leave)
+                self.add_block(Y-y,Z+H,X-x,spruce_leave)
+        for x in range(1,R+1):
+            self.add_block(Y,Z+H,X+x,spruce_leave)
+            self.add_block(Y,Z+H,X-x,spruce_leave)
+
+    def spruce_tree(self,X,Y,Z,H):
+        """
+        génération d'un sapin de hauteur H au point X Y Z
+        on part du principe que les feuilles poussent à partir de Z+3
+        les couches de feuilles sont espacées d'un bloc vertical les unes des autres
+        le rayon du sapin sera donc de (H-3)//3 + 1
+        // est la division entière !
+        """
+        for z in range(0,H):
+            self.add_block(Y,Z+z,X,self.spruce_wood)
+        HL=3
+        R=1+(H-3)//2
+        while HL<H:
+            self.genleaves(X,Y,Z,HL,R)
+            HL+=2
+            R-=1
+        self.add_block(Y,H,X,self.spruce_leave)
+
     def __init__(self):
 
         # chargement des textures depuis les png de taille 16*16
@@ -41,24 +80,36 @@ class Building:
         _grass_top = self.get_tex('grass_top.png')
         _brick_side = self.get_tex('brick_side.png')
         _brick_tb = self.get_tex('brick_top.png')
+        _sL = self.get_tex('spruce_leaves1.png')
+        _sW = self.get_tex('spruce_wood_trunc.png')
 
         # définition des briques sous la forme d'une liste de 3 textures [side,bottom,top]
-        grass=[_grass_side,_grass_bottom,_grass_top]
-        brick=[_brick_side,_brick_tb,_brick_tb]
+        self.grass=[_grass_side,_grass_bottom,_grass_top]
+        self.brick=[_brick_side,_brick_tb,_brick_tb]
+        self.dirt=[_grass_bottom,_grass_bottom,_grass_bottom]
+        self.spruce_leave=[_sL,_sL,_sL]
+        self.spruce_wood=[_sW,_sW,_sW]
 
         self.batch = pyglet.graphics.Batch()
 
         # (y,z,x) ??
-        for i in range(-50,50,1):
-            for j in range(-50,50,1):
-                self.add_block(i, -1, j,grass)
+        for y in range(-50,50,1):
+            for x in range(-50,50,1):
+                ground=random.choice([self.dirt, self.grass, self.grass, self.grass, self.grass])
+                self.add_block(y, -1, x, ground)
+        """
+        simulation d'une plantation de sapin
+        """
+        self.spruce_tree(0,0,0,10)
+        self.spruce_tree(35,35,0,22)
 
-        for z in range (0,25):
-            self.add_block(0, z, 0,brick)
-            self.add_block(0, z, 9,brick)
-            self.add_block(9, z, 0,brick)
-            self.add_block(9, z, 9,brick)
-
+        """
+        for z in range(0,25):
+            self.add_block(-4, z, -4, brick)
+            self.add_block(4, z, -4, brick)
+            self.add_block(-4, z, 4, brick)
+            self.add_block(4, z, 4, brick)
+        """
 
     def draw(self):
         self.batch.draw()
@@ -146,7 +197,9 @@ class Window(pyglet.window.Window):
         self.house = Building()
         #self.player = Player((0.5,1.5,1.5),(-30,0))
         #self.player = Player((6.6,12.5,18),(-51.5,7.8))
-        self.player = Player((11.3, 53.6, 64.2),(-43.6, 16.4))
+        #self.player = Player((11.3, 53.6, 64.2),(-43.6, 16.4))
+        self.player = Player((11.3, 6.269626999999993, 64.2), (18.65, -20.349999999999994))
+
 
     def on_mouse_motion(self,x,y,dx,dy):
         if self.mouse_lock: self.player.mouse_motion(dx,dy)
@@ -168,7 +221,7 @@ class Window(pyglet.window.Window):
         glPopMatrix()
 
 if __name__ == '__main__':
-    window = Window(width=400, height=300, caption='architecture',resizable=True)
+    window = Window(width=800, height=600, caption='architecture',resizable=True)
     glClearColor(0.5,0.7,1,1)
     glEnable(GL_DEPTH_TEST)
     #glEnable(GL_CULL_FACE)
