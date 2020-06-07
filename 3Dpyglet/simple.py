@@ -36,7 +36,7 @@ class Building:
 
     def genleaves(self,X,Y,Z,H,R):
         """
-        X Y Z : position de l'extrémité inférieure du tron de l'arbre
+        X Y Z : position de l'extrémité inférieure du tronc de l'arbre
         H : offset vertical de la couche de feuille par rapport à Z
         R : "rayon" de la couche de feuille
         """
@@ -72,6 +72,69 @@ class Building:
             R-=1
         self.add_block(Y,H,X,self.spruce_leave)
 
+    def romanTower(self,xc,yc,zc,L,hauteur):
+        """
+        xc,yx,zc : coordonnées du centre de la tour
+        L : demi-largeur de la tour
+        hauteur : hauteur de la tour
+        """
+        # 4 coins
+        for z in range(0,hauteur,2):
+            for y in (yc-L,yc+L):
+                for x in (xc-L,xc+L):
+                    self.add_block(y,zc+z,x,self.uni2)
+                    self.add_block(y,zc+z+1,x,self.uni1)
+        # 2 murs
+        for y in range(-L+1,L):
+            for z in range(hauteur):
+                uni=random.choice(self.uni1_tab)
+                self.add_block(yc+y,zc+z,xc-L,uni)
+                self.add_block(yc+y,zc+z,xc+L,uni)
+        #créneaux
+        for y in range(-L+1,L,2):
+            self.add_block(yc+y,zc+hauteur,xc-L,self.uni1)
+            self.add_block(yc+y,zc+hauteur,xc+L,self.uni1)
+
+        # 2 murs
+        for x in range(-L+1,L):
+            for z in range(hauteur):
+                uni=random.choice(self.uni1_tab)
+                self.add_block(yc+L,zc+z,xc+x,uni)
+                self.add_block(yc-L,zc+z,xc+x,uni)
+        #créneaux
+        for x in range(-L+1,L,2):
+            self.add_block(yc+L,zc+hauteur,xc+x,self.uni1)
+            self.add_block(yc-L,zc+hauteur,xc+x,self.uni1)
+
+        #toit
+        for x in range(-L+1,L):
+            for y in range(-L+1,L):
+                self.add_block(yc+y,zc+hauteur-2,xc+x,self.spruce_wood)
+
+    def romanWalls(self,xs,ys,zs,l,e,h,dir):
+        """
+        xs,ys,zs=coordonnées du point de départ du mur
+        l=longueur du mur
+        h=hauteur du mur
+        e=epaisseur du mur
+        dir=direction(x ou y)
+        """
+        if dir=="x":
+            for x in range(l):
+                for y in range(e):
+                    for z in range(h):
+                        uni=random.choice(self.uni1_tab)
+                        self.add_block(ys+y,zs+z,xs+x,uni)
+
+        if dir=="y":
+            for x in range(e):
+                for y in range(l):
+                    for z in range(h):
+                        uni=random.choice(self.uni1_tab)
+                        self.add_block(ys+y,zs+z,xs+x,uni)
+
+
+
     def __init__(self):
 
         # chargement des textures depuis les png de taille 16*16
@@ -82,6 +145,13 @@ class Building:
         _brick_tb = self.get_tex('brick_top.png')
         _sL = self.get_tex('spruce_leaves1.png')
         _sW = self.get_tex('spruce_wood_trunc.png')
+        _Bl = self.get_tex('birch_leaves.png')
+        _Bw_top = self.get_tex('birch_top.png')
+        _Bw_side = self.get_tex('birch_wood.png')
+        _Sstone_side = self.get_tex('sandstone_side.png')
+        _Sstone_top = self.get_tex('sandstone_top.png')
+        _Sstonebrick_side = self.get_tex('sandstone_brick_side.png')
+        _Sstonebrick_top = self.get_tex('sandstone_brick_top.png')
 
         # définition des briques sous la forme d'une liste de 3 textures [side,bottom,top]
         self.grass=[_grass_side,_grass_bottom,_grass_top]
@@ -89,19 +159,70 @@ class Building:
         self.dirt=[_grass_bottom,_grass_bottom,_grass_bottom]
         self.spruce_leave=[_sL,_sL,_sL]
         self.spruce_wood=[_sW,_sW,_sW]
+        self.birch_leave=[_Bl,_Bl,_Bl]
+        self.birch_wood=[_Bw_side,_Bw_top,_Bw_top]
+        self.sandstone=[_Sstone_side,_Sstone_top,_Sstone_top]
+        self.sandstone_brick=[_Sstonebrick_side,_Sstonebrick_top,_Sstonebrick_top]
+
+        # textures des murs
+        path="uni"
+
+        top = self.get_tex('sandstone_brick_top.png')
+
+        uni1=[self.get_tex('{}/uni1.png'.format(path)),top,top]
+        self.uni1=uni1
+        uni1_clair=[self.get_tex('{}/uni1_clair.png'.format(path)),top,top]
+        uni1_clair2=[self.get_tex('{}/uni1_clair2.png'.format(path)),top,top]
+        uni1_sombre=[self.get_tex('{}/uni1_sombre.png'.format(path)),top,top]
+        uni1_sombre2=[self.get_tex('{}/uni1_sombre2.png'.format(path)),top,top]
+        self.uni1_tab=[uni1,uni1,uni1_clair,uni1_clair2,uni1_sombre,uni1_sombre2]
+
+        self.top=top
+        self.uni2=[self.get_tex('{}/uni2.png'.format(path)),top,top]
 
         self.batch = pyglet.graphics.Batch()
 
         # (y,z,x) ??
         for y in range(-50,50,1):
             for x in range(-50,50,1):
-                ground=random.choice([self.dirt, self.grass, self.grass, self.grass, self.grass])
+                ground=random.choice([self.dirt, self.grass, self.grass, self.grass, self.grass, self.grass, self.grass, self.grass])
                 self.add_block(y, -1, x, ground)
+        """
+        z : altitude du chateau
+        htc : half taille chateau
+        htt : half taille tower
+        htower : hauteur tower
+        l=longueur murs
+        ep=epaisseur murs
+        """
+        z=0
+        htc=20
+        htt=5
+        htower=15
+        l=2*(htc-htt)
+        ep=3
+
+        self.romanWalls(-htc+htt,htc-1,z,l,ep,htower-7,"x")
+
+        self.romanWalls(-htc+htt,-htc-1,z,l,ep,htower-7,"x")
+
+        self.romanWalls(htc-1,-htc+htt,z,l,ep,htower-7,"y")
+
+        self.romanWalls(-htc-1,-htc+htt,z,l,ep,htower-7,"y")
+
+        self.romanTower(htc,htc,z,htt,htower)
+
+        self.romanTower(htc,-htc,z,htt,htower)
+
+        self.romanTower(-htc,-htc,z,htt,htower)
+
+        self.romanTower(-htc,htc,z,htt,htower)
+
         """
         simulation d'une plantation de sapin
         """
         self.spruce_tree(0,0,0,10)
-        self.spruce_tree(35,35,0,22)
+        self.spruce_tree(35,35,0,12)
 
         """
         for z in range(0,25):
@@ -198,8 +319,8 @@ class Window(pyglet.window.Window):
         #self.player = Player((0.5,1.5,1.5),(-30,0))
         #self.player = Player((6.6,12.5,18),(-51.5,7.8))
         #self.player = Player((11.3, 53.6, 64.2),(-43.6, 16.4))
-        self.player = Player((11.3, 6.269626999999993, 64.2), (18.65, -20.349999999999994))
-
+        #self.player = Player((11.3, 6.269626999999993, 64.2), (18.65, -20.349999999999994))
+        self.player = Player((8.4, 70, 10.5), (-84.9, 1.3))
 
     def on_mouse_motion(self,x,y,dx,dy):
         if self.mouse_lock: self.player.mouse_motion(dx,dy)
