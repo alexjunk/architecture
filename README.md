@@ -1,3 +1,7 @@
+# tests with pyglet
+
+![castle.png](castle.png)
+
 
         \                           /
          \                         /
@@ -21,8 +25,3 @@
           /          N            \
          /           q,            \
         /                           \
-        
-
-        
-# tests with pyglet
-        
