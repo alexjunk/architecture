@@ -8,7 +8,7 @@ from pyglet.window import key
 import math
 import random
 
-class Building:
+class Element:
 
     def get_tex(self,file):
         """
@@ -133,6 +133,31 @@ class Building:
                         uni=random.choice(self.uni1_tab)
                         self.add_block(ys+y,zs+z,xs+x,uni)
 
+    def castle(self,z,htc,htt,htower,l,ep):
+        """
+        chateau
+        z : altitude du chateau
+        htc : half taille chateau
+        htt : half taille tower
+        htower : hauteur tower
+        l=longueur murs
+        ep=epaisseur murs
+        """
+        self.romanWalls(-htc+htt,htc-1,z,l,ep,htower-7,"x")
+
+        self.romanWalls(-htc+htt,-htc-1,z,l,ep,htower-7,"x")
+
+        self.romanWalls(htc-1,-htc+htt,z,l,ep,htower-7,"y")
+
+        self.romanWalls(-htc-1,-htc+htt,z,l,ep,htower-7,"y")
+
+        self.romanTower(htc,htc,z,htt,htower)
+
+        self.romanTower(htc,-htc,z,htt,htower)
+
+        self.romanTower(-htc,-htc,z,htt,htower)
+
+        self.romanTower(-htc,htc,z,htt,htower)
 
 
     def __init__(self):
@@ -187,42 +212,10 @@ class Building:
             for x in range(-50,50,1):
                 ground=random.choice([self.dirt, self.grass, self.grass, self.grass, self.grass, self.grass, self.grass, self.grass])
                 self.add_block(y, -1, x, ground)
-        """
-        z : altitude du chateau
-        htc : half taille chateau
-        htt : half taille tower
-        htower : hauteur tower
-        l=longueur murs
-        ep=epaisseur murs
-        """
-        z=0
-        htc=20
-        htt=5
-        htower=15
-        l=2*(htc-htt)
-        ep=3
 
-        self.romanWalls(-htc+htt,htc-1,z,l,ep,htower-7,"x")
 
-        self.romanWalls(-htc+htt,-htc-1,z,l,ep,htower-7,"x")
 
-        self.romanWalls(htc-1,-htc+htt,z,l,ep,htower-7,"y")
 
-        self.romanWalls(-htc-1,-htc+htt,z,l,ep,htower-7,"y")
-
-        self.romanTower(htc,htc,z,htt,htower)
-
-        self.romanTower(htc,-htc,z,htt,htower)
-
-        self.romanTower(-htc,-htc,z,htt,htower)
-
-        self.romanTower(-htc,htc,z,htt,htower)
-
-        """
-        simulation d'une plantation de sapin
-        """
-        self.spruce_tree(0,0,0,10)
-        self.spruce_tree(35,35,0,12)
 
         """
         for z in range(0,25):
@@ -315,7 +308,7 @@ class Window(pyglet.window.Window):
         self.push_handlers(self.keys)
         pyglet.clock.schedule(self.update)
 
-        self.house = Building()
+        self.pays = Element()
         #self.player = Player((0.5,1.5,1.5),(-30,0))
         #self.player = Player((6.6,12.5,18),(-51.5,7.8))
         #self.player = Player((11.3, 53.6, 64.2),(-43.6, 16.4))
@@ -338,12 +331,14 @@ class Window(pyglet.window.Window):
         self.clear()
         self.set3d()
         self.push(self.player.pos,self.player.rot)
-        self.house.draw()
+        self.pays.draw()
         glPopMatrix()
 
+"""
 if __name__ == '__main__':
     window = Window(width=800, height=600, caption='architecture',resizable=True)
     glClearColor(0.5,0.7,1,1)
     glEnable(GL_DEPTH_TEST)
     #glEnable(GL_CULL_FACE)
     pyglet.app.run()
+"""
