@@ -177,6 +177,11 @@ class Element:
         _Sstone_top = self.get_tex('sandstone_top.png')
         _Sstonebrick_side = self.get_tex('sandstone_brick_side.png')
         _Sstonebrick_top = self.get_tex('sandstone_brick_top.png')
+        _Colombage_right_side = self.get_tex('colombageWallRight.png')
+        _Colombage_right_up_side = self.get_tex('colombageWallRight_up.png')
+        _Colombage_left_side = self.get_tex('colombageWallLeft.png')
+        _Colombage_left_up_side = self.get_tex('colombageWallLeft_up.png')
+        _Colombage_top = self.get_tex('colombageWall_TOP.png')
 
         # définition des briques sous la forme d'une liste de 3 textures [side,bottom,top]
         self.grass=[_grass_side,_grass_bottom,_grass_top]
@@ -188,6 +193,14 @@ class Element:
         self.birch_wood=[_Bw_side,_Bw_top,_Bw_top]
         self.sandstone=[_Sstone_side,_Sstone_top,_Sstone_top]
         self.sandstone_brick=[_Sstonebrick_side,_Sstonebrick_top,_Sstonebrick_top]
+        self.colombage_cornersLeft_down=[_Colombage_left_side,_Colombage_right_side,_Colombage_top]
+        self.colombage_cornersRight_down=[_Colombage_right_side,_Colombage_left_side,_Colombage_top]
+        self.colombage_cornersLeft_up=[_Colombage_left_up_side,_Colombage_right_up_side,_Colombage_top]
+        self.colombage_cornersRight_up=[_Colombage_right_up_side,_Colombage_left_up_side,_Colombage_top]
+        self.colombage_right=[_Colombage_right_side,_Colombage_left_side,_Colombage_top]
+        self.colombage_left=[_Colombage_left_side,_Colombage_right_side,_Colombage_top]
+        self.colombage_right_up=[_Colombage_right_up_side,_Colombage_left_up_side,_Colombage_top]
+        self.colombage_left_up=[_Colombage_left_up_side,_Colombage_right_up_side,_Colombage_top]
 
         # textures des murs
         path="uni"
@@ -212,9 +225,6 @@ class Element:
             for x in range(-50,50,1):
                 ground=random.choice([self.dirt, self.grass, self.grass, self.grass, self.grass, self.grass, self.grass, self.grass])
                 self.add_block(y, -1, x, ground)
-
-
-
 
 
         """
