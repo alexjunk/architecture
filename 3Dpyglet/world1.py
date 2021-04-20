@@ -8,28 +8,23 @@ glEnable(GL_DEPTH_TEST)
 
 #glEnable(GL_CULL_FACE)
 
-
-
 """
 simulation d'une plantation de sapin
 """
-window.pays.spruce_tree(0,0,0,10)
+window.pays.spruce_tree(35,85,0,10)
 window.pays.spruce_tree(35,35,0,12)
 
 """
 z : altitude du chateau
-htc : half taille chateau
+dct : distance entre les centres de 2 tours alignées suivant x ou y
 htt : half taille tower
 htower : hauteur tower
-l=longueur murs
 ep=epaisseur murs
 """
-z=0
-htc=20
+dct=40
 htt=5
 htower=15
-l=2*(htc-htt)
 ep=3
-window.pays.castle(z,htc,htt,htower,l,ep)
+window.pays.castle(-40,-30,0,dct,htt,htower,ep)
 
 pyglet.app.run()

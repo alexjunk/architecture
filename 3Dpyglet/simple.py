@@ -25,14 +25,27 @@ class Element:
 
         tex_coords = ('t2f', (0, 0, 1, 0, 1, 1, 0, 1))
 
-        self.batch.add(4, GL_QUADS, texture[0],   ('v3f', (X, y, z,  x, y, z,  x, Y, z,  X, Y, z)), tex_coords) # back
-        self.batch.add(4, GL_QUADS, texture[0],   ('v3f', (x, y, Z,  X, y, Z,  X, Y, Z,  x, Y, Z)), tex_coords) # front
+        if len(texture)==3:
+            self.batch.add(4, GL_QUADS, texture[0],   ('v3f', (X, y, z,  x, y, z,  x, Y, z,  X, Y, z)), tex_coords) # back
+            self.batch.add(4, GL_QUADS, texture[0],   ('v3f', (x, y, Z,  X, y, Z,  X, Y, Z,  x, Y, Z)), tex_coords) # front
 
-        self.batch.add(4, GL_QUADS, texture[0],   ('v3f', (x, y, z,  x, y, Z,  x, Y, Z,  x, Y, z)), tex_coords)  # left
-        self.batch.add(4, GL_QUADS, texture[0],   ('v3f', (X, y, Z,  X, y, z,  X, Y, z,  X, Y, Z)), tex_coords)  # right
+            self.batch.add(4, GL_QUADS, texture[0],   ('v3f', (x, y, z,  x, y, Z,  x, Y, Z,  x, Y, z)), tex_coords)  # left
+            self.batch.add(4, GL_QUADS, texture[0],   ('v3f', (X, y, Z,  X, y, z,  X, Y, z,  X, Y, Z)), tex_coords)  # right
 
-        self.batch.add(4, GL_QUADS, texture[1],   ('v3f', (x, y, z,  X, y, z,  X, y, Z,  x, y, Z)), tex_coords)  # bottom
-        self.batch.add(4, GL_QUADS, texture[2],   ('v3f', (x, Y, Z,  X, Y, Z,  X, Y, z,  x, Y, z)), tex_coords)  # top
+            self.batch.add(4, GL_QUADS, texture[1],   ('v3f', (x, y, z,  X, y, z,  X, y, Z,  x, y, Z)), tex_coords)  # bottom
+            self.batch.add(4, GL_QUADS, texture[2],   ('v3f', (x, Y, Z,  X, Y, Z,  X, Y, z,  x, Y, z)), tex_coords)  # top
+
+        if len(texture)==6:
+            self.batch.add(4, GL_QUADS, texture[0],   ('v3f', (X, y, z,  x, y, z,  x, Y, z,  X, Y, z)), tex_coords) # back
+            self.batch.add(4, GL_QUADS, texture[1],   ('v3f', (x, y, Z,  X, y, Z,  X, Y, Z,  x, Y, Z)), tex_coords) # front
+
+            self.batch.add(4, GL_QUADS, texture[2],   ('v3f', (x, y, z,  x, y, Z,  x, Y, Z,  x, Y, z)), tex_coords)  # left
+            self.batch.add(4, GL_QUADS, texture[3],   ('v3f', (X, y, Z,  X, y, z,  X, Y, z,  X, Y, Z)), tex_coords)  # right
+
+            self.batch.add(4, GL_QUADS, texture[4],   ('v3f', (x, y, z,  X, y, z,  X, y, Z,  x, y, Z)), tex_coords)  # bottom
+            self.batch.add(4, GL_QUADS, texture[5],   ('v3f', (x, Y, Z,  X, Y, Z,  X, Y, z,  x, Y, z)), tex_coords)  # top
+
+
 
     def genleaves(self,X,Y,Z,H,R):
         """
@@ -133,79 +146,210 @@ class Element:
                         uni=random.choice(self.uni1_tab)
                         self.add_block(ys+y,zs+z,xs+x,uni)
 
-    def castle(self,z,htc,htt,htower,l,ep):
+    def castle(self,XC,YC,z,dct,htt,htower,ep):
         """
         chateau
+
+        XC,YC : coordonnées du centre du chateau
+
         z : altitude du chateau
-        htc : half taille chateau
+
+        dct : distance entre les centres de 2 tours alignées suivant x ou y
+
         htt : half taille tower
+
         htower : hauteur tower
-        l=longueur murs
+
         ep=epaisseur murs
+
+        On va faire appel à 2 variables intermédiaires :
+
+        - d moitié de dct
+
+        - l longueur des murs
         """
-        self.romanWalls(-htc+htt,htc-1,z,l,ep,htower-7,"x")
+        d=dct//2
 
-        self.romanWalls(-htc+htt,-htc-1,z,l,ep,htower-7,"x")
+        l=dct-2*htt
 
-        self.romanWalls(htc-1,-htc+htt,z,l,ep,htower-7,"y")
+        self.romanWalls(XC-d+htt,YC+d-1,z,l,ep,htower-7,"x")
 
-        self.romanWalls(-htc-1,-htc+htt,z,l,ep,htower-7,"y")
+        self.romanWalls(XC-d+htt,YC-d-1,z,l,ep,htower-7,"x")
 
-        self.romanTower(htc,htc,z,htt,htower)
+        self.romanWalls(XC+d-1,YC-d+htt,z,l,ep,htower-7,"y")
 
-        self.romanTower(htc,-htc,z,htt,htower)
+        self.romanWalls(XC-d-1,YC-d+htt,z,l,ep,htower-7,"y")
 
-        self.romanTower(-htc,-htc,z,htt,htower)
+        self.romanTower(XC+d,YC+d,z,htt,htower)
 
-        self.romanTower(-htc,htc,z,htt,htower)
+        self.romanTower(XC+d,YC-d,z,htt,htower)
 
+        self.romanTower(XC-d,YC-d,z,htt,htower)
+
+        self.romanTower(XC-d,YC+d,z,htt,htower)
+
+    def colombageFloor(self, XC, YC, ZC, H, L, l, nbw=[2,6,2,5]):
+        """
+        un étage de maison à colombage de hauteur H
+
+        L, l : longueur et largeur
+
+        XC, YC, ZC : position of the front left corner of the floor
+
+        nbw : tableau des nombres de fenêtres par face (front, right, back, left)
+        """
+        verbose=False
+        L=2*(L//2)
+        l=2*(l//2)
+        y=YC
+        x=XC
+
+        def tirage(y,taille,nb=2,plus=1):
+            """
+            nested function
+            tire des nombres aléatoires entre y et y+plus*taille
+
+            plus vaut 1 ou -1
+
+            retourne un tableau de taille nb contenant ces nombres
+            """
+            a=[]
+            while len(a) < nb :
+                tirage=y+plus*random.choice(range(taille))
+                if tirage not in a:
+                    a.append(tirage)
+            if verbose:
+                print("tirage réalisé entre {} et {}".format(y,y+plus*taille))
+                print("le tirage est {}".format(a))
+            return a
+
+        def hauteur(x,y,textures,plus=[0,1]):
+            """
+            nested function !!!
+            monte une unité de mur sur toute la hauteur
+            """
+            for z in range(ZC,ZC+H-1):
+                if ( ( abs(plus[0])*x + abs(plus[1])*y ) in a ) and z > ZC:
+                    self.add_block(y, z, x, textures[2])
+                else:
+                    self.add_block(y, z, x, textures[0])
+                if ( ( abs(plus[0])*(x+plus[0]) + abs(plus[1])*(y+plus[1]) ) in a ) and z > ZC:
+                    self.add_block(y+plus[1], z, x+plus[0], textures[2])
+                else:
+                    self.add_block(y+plus[1], z, x+plus[0], textures[1])
+            self.add_block(y, ZC+H-1, x, textures[3])
+            self.add_block(y+plus[1], ZC+H-1, x+plus[0], textures[3])
+
+
+        t=[self.CBLCFront,self.CBM,self.Window,self.CBALLBFront]
+
+        if verbose:
+            print("nous sommes à (x={},y={})".format(x,y))
+        a=tirage(y, L-2, min(nbw[0],L-2), 1)
+
+        while y<YC+L:
+            hauteur(x,y,t,plus=[0,1])
+            y+=2
+        y-=1
+        x-=1
+
+        if verbose:
+            print("nous sommes à (x={},y={})".format(x,y))
+        a=tirage(x, l-2, min(nbw[1],l-2), -1)
+
+        t=[self.CBRCFront,self.CBM,self.Window,self.CBALLBRight]
+
+        while x>=XC-l:
+            hauteur(x,y,t,plus=[-1,0])
+            x-=2
+        y-=1
+        x+=1
+
+        if verbose:
+            print("nous sommes à (x={},y={})".format(x,y))
+        a=tirage(y, L-2, min(nbw[2],L-2), -1)
+
+        t=[self.CBRCBack,self.CBM,self.Window,self.CBALLBBack]
+
+        while y>YC-1:
+            hauteur(x,y,t,plus=[0,-1])
+            y-=2
+        y+=1
+        x+=1
+
+        if verbose:
+            print("nous sommes à (x={},y={})".format(x,y))
+        a=tirage(x, l-2 , min(nbw[3],l-2), 1)
+
+        t=[self.CBLCBack,self.CBM,self.Window,self.CBALLBLeft]
+
+        while x<=XC:
+            hauteur(x,y,t,plus=[1,0])
+            x+=2
 
     def __init__(self):
+        """
+        1) chargement des textures depuis les png de taille 16*16
 
-        # chargement des textures depuis les png de taille 16*16
-        _grass_side = self.get_tex('grass_side.png')
-        _grass_bottom = self.get_tex('dirt.png')
-        _grass_top = self.get_tex('grass_top.png')
-        _brick_side = self.get_tex('brick_side.png')
-        _brick_tb = self.get_tex('brick_top.png')
-        _sL = self.get_tex('spruce_leaves1.png')
-        _sW = self.get_tex('spruce_wood_trunc.png')
-        _Bl = self.get_tex('birch_leaves.png')
-        _Bw_top = self.get_tex('birch_top.png')
-        _Bw_side = self.get_tex('birch_wood.png')
-        _Sstone_side = self.get_tex('sandstone_side.png')
-        _Sstone_top = self.get_tex('sandstone_top.png')
-        _Sstonebrick_side = self.get_tex('sandstone_brick_side.png')
-        _Sstonebrick_top = self.get_tex('sandstone_brick_top.png')
-        _Colombage_right_side = self.get_tex('colombageWallRight.png')
-        _Colombage_right_up_side = self.get_tex('colombageWallRight_up.png')
-        _Colombage_left_side = self.get_tex('colombageWallLeft.png')
-        _Colombage_left_up_side = self.get_tex('colombageWallLeft_up.png')
-        _Colombage_top = self.get_tex('colombageWall_TOP.png')
+        2) définition des briques sous la forme d'une liste de :
+                - 3 textures [side,bottom,top]
+                - 6 textures [front,back,left,right,bottom,top]
+        """
+        path="grass"
 
-        # définition des briques sous la forme d'une liste de 3 textures [side,bottom,top]
+        _grass_side = self.get_tex('{}/grass_side.png'.format(path))
+        _grass_bottom = self.get_tex('{}/dirt.png'.format(path))
+        _grass_top = self.get_tex('{}/grass_top.png'.format(path))
+
         self.grass=[_grass_side,_grass_bottom,_grass_top]
-        self.brick=[_brick_side,_brick_tb,_brick_tb]
         self.dirt=[_grass_bottom,_grass_bottom,_grass_bottom]
+
+        path="brick"
+
+        _brick_side = self.get_tex('{}/brick_side.png'.format(path))
+        _brick_tb = self.get_tex('{}/brick_top.png'.format(path))
+
+        self.brick=[_brick_side,_brick_tb,_brick_tb]
+
+        path="tree_spruce"
+
+        _sL = self.get_tex('{}/spruce_leaves1.png'.format(path))
+        _sW = self.get_tex('{}/spruce_wood_trunc.png'.format(path))
+
         self.spruce_leave=[_sL,_sL,_sL]
         self.spruce_wood=[_sW,_sW,_sW]
+
+        """
+        birch trees not yet created
+        """
+        path="tree_birch"
+
+        _Bl = self.get_tex('{}/birch_leaves.png'.format(path))
+        _Bw_top = self.get_tex('{}/birch_top.png'.format(path))
+        _Bw_side = self.get_tex('{}/birch_wood.png'.format(path))
+
+        """
         self.birch_leave=[_Bl,_Bl,_Bl]
         self.birch_wood=[_Bw_side,_Bw_top,_Bw_top]
+        """
+
+        """
+        sandstone not used - uni utilisé à la place
+        top utilisé dans uni - cf plus loin
+        """
+        path="sandstone"
+        _Sstone_side = self.get_tex('{}/sandstone_side.png'.format(path))
+        _Sstone_top = self.get_tex('{}/sandstone_top.png'.format(path))
+        _Sstonebrick_side = self.get_tex('{}/sandstone_brick_side.png'.format(path))
+        _Sstonebrick_top = self.get_tex('{}/sandstone_brick_top.png'.format(path))
+        top = self.get_tex('{}/sandstone_brick_top.png'.format(path))
+        """
         self.sandstone=[_Sstone_side,_Sstone_top,_Sstone_top]
         self.sandstone_brick=[_Sstonebrick_side,_Sstonebrick_top,_Sstonebrick_top]
-        self.colombage_cornersLeft_down=[_Colombage_left_side,_Colombage_right_side,_Colombage_top]
-        self.colombage_cornersRight_down=[_Colombage_right_side,_Colombage_left_side,_Colombage_top]
-        self.colombage_cornersLeft_up=[_Colombage_left_up_side,_Colombage_right_up_side,_Colombage_top]
-        self.colombage_cornersRight_up=[_Colombage_right_up_side,_Colombage_left_up_side,_Colombage_top]
-        self.colombage_right=[_Colombage_right_side,_Colombage_left_side,_Colombage_top]
-        self.colombage_left=[_Colombage_left_side,_Colombage_right_side,_Colombage_top]
-        self.colombage_right_up=[_Colombage_right_up_side,_Colombage_left_up_side,_Colombage_top]
-        self.colombage_left_up=[_Colombage_left_up_side,_Colombage_right_up_side,_Colombage_top]
+        """
 
-        # textures des murs
+        # textures des murs du chateau pour simuler une coinstruction en bloc de pierre de type calcaire
         path="uni"
-
-        top = self.get_tex('sandstone_brick_top.png')
 
         uni1=[self.get_tex('{}/uni1.png'.format(path)),top,top]
         self.uni1=uni1
@@ -218,22 +362,106 @@ class Element:
         self.top=top
         self.uni2=[self.get_tex('{}/uni2.png'.format(path)),top,top]
 
+        path="colombage"
+
+        _CBR = self.get_tex('{}/colombageWallRight.png'.format(path))
+        _CBL = self.get_tex('{}/colombageWallLeft.png'.format(path))
+        _CBT = self.get_tex('{}/colombageWall_TOP.png'.format(path))
+        _CBM = self.get_tex('{}/colombageWallMiddle.png'.format(path))
+        _CBAllB = self.get_tex('{}/colombageWallAllBorders.png'.format(path))
+        _CBF = self.get_tex('{}/colombageWallFULL.png'.format(path))
+        _Window = self.get_tex('{}/Window.png'.format(path))
+        _DoorUp = self.get_tex('{}/DoorUpB.png'.format(path))
+        _DoorDown = self.get_tex('{}/DoorDownB.png'.format(path))
+        """
+        # NOT USED
+        _CBRU = self.get_tex('{}/colombageWallRight_up.png'.format(path))
+        _CBLU = self.get_tex('{}/colombageWallLeft_up.png'.format(path))
+        _CBU = self.get_tex('{}/colombageWallUp.png'.format(path))
+        _CBLD = self.get_tex('{}/colombageWallLeftDown.png'.format(path))
+        _CBRD = self.get_tex('{}/colombageWallRightDown.png'.format(path))
+        _CBD = self.get_tex('{}/colombageWallDown.png'.format(path))
+        _CBMU = self.get_tex('{}/colombageWallMiddleUp.png'.format(path))
+        """
+        self.CBLCFront = [_CBT,_CBL,_CBR,_CBT,_CBT,_CBT]
+        self.CBRCFront = [_CBT,_CBR,_CBT,_CBL,_CBT,_CBT]
+        self.CBLCBack = [_CBR,_CBT,_CBL,_CBT,_CBT,_CBT]
+        self.CBRCBack = [_CBL,_CBT,_CBT,_CBR,_CBT,_CBT]
+        self.CBM = [_CBM,_CBM,_CBM,_CBM,_CBT,_CBT]
+        self.CBALLBFront = [_CBAllB,_CBF,_CBF,_CBF,_CBF,_CBAllB]
+        self.CBALLBRight = [_CBF,_CBF,_CBAllB,_CBF,_CBF,_CBAllB]
+        self.CBALLBLeft = [_CBF,_CBF,_CBF,_CBAllB,_CBF,_CBAllB]
+        self.CBALLBBack = [_CBF,_CBAllB,_CBF,_CBF,_CBF,_CBAllB]
+        self.Window = [_Window,_sW,_sW]
+        self.DoorU = [_DoorUp,_sW,_sW]
+        self.DoorD = [_DoorDown,_sW,_sW]
+        """
+        NOT USED
+        """
+        """
+        self.CBNormal = [_CBT,_CBT,_CBT]
+        self.CBLCFrontUP = [_CBT,_CBLU,_CBRU,_CBT,_CBT,_CBLD]
+        self.CBRCFrontUP = [_CBT,_CBRU,_CBT,_CBLU,_CBT,_CBRD]
+        self.CBLCBackUP = [_CBRU,_CBT,_CBLU,_CBT,_CBT,_CBLU]
+        self.CBRCBackUP = [_CBLU,_CBT,_CBT,_CBRU,_CBT,_CBRU]
+        self.CBFrontUP = [_CBT,_CBU,_CBT,_CBT,_CBT,_CBD]
+        self.CBLeftUP = [_CBT,_CBT,_CBU,_CBT,_CBT,_CBL]
+        self.CBRightUP = [_CBT,_CBT,_CBT,_CBU,_CBT,_CBR]
+        self.CBBackUP = [_CBU,_CBT,_CBT,_CBT,_CBT,_CBU]
+        """
+
         self.batch = pyglet.graphics.Batch()
 
+        """
+        la maison à colombage
+        """
+        # fondations en briques
+        L=18
+        l=18
+        XC=25
+        YC=25
+        z=0
+        H=4
+        """
+        La porte est toujours sur la face de devant
+        YD = position y de la porte
+        """
+        YD=YC+L//2-1
+
+        self.add_block(YD,z+1,XC,self.DoorU)
+        self.add_block(YD+1,z+1,XC,self.DoorU)
+
+        for y in range(YC    , YC+L  , 1):
+            if y not in [YD,YD+1]:
+                self.add_block(y       , z, XC  , self.brick)
+            else:
+                self.add_block(y       , z, XC  ,self.DoorD)
+
+        for x in range(XC-1  , XC-1-l,-1):
+            self.add_block(YC+L-1  , z, x   , self.brick)
+
+        for y in range(YC-2+L, YC-2  ,-1):
+            self.add_block(y       , z, XC-l, self.brick)
+
+        for x in range(XC+1-l, XC+1  , 1):
+            self.add_block(YC-1    , z, x   , self.brick)
+
+        # rajouter le nombre de fenêtres comme dernière variable
+        self.colombageFloor(XC  , YC  , z+1   , H, L  , l, nbw=[1,3,2,5])
+        """
+        dec vaut soit 0 soit 1
+        si dec vaut 1, l'étage du dessus est plus grand que l'étage du dessus
+        """
+        dec=1
+        self.colombageFloor(XC+dec, YC-dec, z+1+H , H, L+2*dec, l+2*dec)
+        self.colombageFloor(XC+dec, YC-dec, z+1+2*H , H, L+2*dec, l+2*dec, nbw=[3,8,2,23])
+
         # (y,z,x) ??
-        for y in range(-50,50,1):
-            for x in range(-50,50,1):
+        htu=50
+        for y in range(-htu,htu,1):
+            for x in range(-htu,htu,1):
                 ground=random.choice([self.dirt, self.grass, self.grass, self.grass, self.grass, self.grass, self.grass, self.grass])
                 self.add_block(y, -1, x, ground)
-
-
-        """
-        for z in range(0,25):
-            self.add_block(-4, z, -4, brick)
-            self.add_block(4, z, -4, brick)
-            self.add_block(-4, z, 4, brick)
-            self.add_block(4, z, 4, brick)
-        """
 
     def draw(self):
         self.batch.draw()
@@ -274,7 +502,7 @@ class Player:
             self.pos[1] += s
         if keys[key.LSHIFT]:
             self.pos[1] -= s
-        print(self.pos, self.rot)
+        #print(self.pos, self.rot)
 
 class Window(pyglet.window.Window):
 
