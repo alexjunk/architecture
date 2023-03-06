@@ -1,5 +1,7 @@
 https://openai.com/research/vpt
 
+https://github.com/openai/Video-Pre-Training
+
 
 # tests with pyglet
 
